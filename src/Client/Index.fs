@@ -457,8 +457,8 @@ module ViewComponents =
                 "flex flex-col items-center justify-center space-y-24 h-screen bg-gradient-to-r from-gray-800 via-gray-900 to-black text-center"
             prop.children [
                 Html.h1 [
-                    prop.className "text-8xl font-bold text-rose-700 mb-5"
-                    prop.text "< Contact />"
+                    prop.className "text-7xl font-bold text-rose-700 mb-5"
+                    prop.text "< My Contact />"
                 ]
                 Html.div [
                     prop.className "flex space-x-4 mt-8 justify-evenly w-full"
