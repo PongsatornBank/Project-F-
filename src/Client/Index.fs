@@ -11,7 +11,7 @@ type Model = {
     NewSkill: string
     IsInsertInputVisible: bool
     InsertErrorMessage: string option
-    
+
     DeleteSkill: string
     IsDeleteInputVisible: bool
     DeleteErrorMessage: string option
@@ -55,7 +55,7 @@ let init () =
         NewSkill = ""
         IsInsertInputVisible = false
         InsertErrorMessage = None
-        
+
         DeleteSkill = ""
         IsDeleteInputVisible = false
         DeleteErrorMessage = None
@@ -79,40 +79,21 @@ let update msg model =
                 Cmd.OfAsync.perform informationsApi.getInformations () (Finished >> LoadInformations)
 
             { model with Informations = Loading }, loadCmd
-        | Finished informations ->
-            {
-                model with
-                    Informations = Loaded informations
-            },
-            Cmd.none
 
-    | ShowInputSection -> 
-        { 
-            model with 
-                IsInsertInputVisible = true 
-        }, Cmd.none
+        | Finished informations -> { model with Informations = Loaded informations }, Cmd.none
 
-    | HideInputSection -> 
-        { 
-            model with 
-                IsInsertInputVisible = false 
-        }, Cmd.none
+    | ShowInputSection -> { model with IsInsertInputVisible = true }, Cmd.none
 
-    | SetNewSkill newSkill -> 
-        { 
-            model with 
-                NewSkill = newSkill 
-        }, Cmd.none
+    | HideInputSection -> { model with IsInsertInputVisible = false }, Cmd.none
+
+    | SetNewSkill newSkill -> { model with NewSkill = newSkill }, Cmd.none
 
     | AddInformation ->
         if model.NewSkill.Trim() = "" then
             let errorMessage = "Please fill in Skills fields."
 
-            {
-                model with
-                    InsertErrorMessage = Some errorMessage
-            },
-            Cmd.none
+            { model with InsertErrorMessage = Some errorMessage }, Cmd.none
+
         else
             let addCmd =
                 Cmd.OfAsync.either
@@ -121,58 +102,31 @@ let update msg model =
                     (fun _ -> InformationAdded(Ok()))
                     (fun ex -> InformationAdded(Error ex.Message))
 
-            {
-                model with
-                    IsInsertInputVisible = false
-                    InsertErrorMessage = None
-            },
-            addCmd
+            { model with IsInsertInputVisible = false; InsertErrorMessage = None }, addCmd
 
     | InformationAdded result ->
         match result with
         | Ok() ->
             let loadCmd = LoadInformations(Start()) |> Cmd.ofMsg
 
-            {
-                model with
-                    Informations = Loading
-                    NewSkill = ""
-            },
-            loadCmd
+            { model with Informations = Loading; NewSkill = "" }, loadCmd
+
         | Error errMsg ->
             printfn "Error adding information: %s" errMsg
             { model with Informations = Loading }, Cmd.none
 
-    | ShowDeleteInputSection ->
-        {
-            model with
-                IsDeleteInputVisible = true
-        },
-        Cmd.none
+    | ShowDeleteInputSection -> { model with IsDeleteInputVisible = true }, Cmd.none
 
-    | HideDeleteInputSection ->
-        {
-            model with
-                IsDeleteInputVisible = false
-                DeleteSkill = ""
-        },
-        Cmd.none
+    | HideDeleteInputSection -> { model with IsDeleteInputVisible = false; DeleteSkill = "" }, Cmd.none
 
-    | SetDeleteSkill deleteSkill -> 
-        { 
-            model with 
-                DeleteSkill = deleteSkill 
-        }, Cmd.none
+    | SetDeleteSkill deleteSkill -> { model with DeleteSkill = deleteSkill }, Cmd.none
 
     | DeleteInformation ->
         if model.DeleteSkill.Trim() = "" then
             let errorMessage = "Please enter the skill you want to delete."
 
-            {
-                model with
-                    DeleteErrorMessage = Some errorMessage
-            },
-            Cmd.none
+            { model with DeleteErrorMessage = Some errorMessage }, Cmd.none
+
         else
             let deleteCmd =
                 Cmd.OfAsync.either
@@ -181,65 +135,33 @@ let update msg model =
                     (fun _ -> InformationDeleted(Ok()))
                     (fun ex -> InformationDeleted(Error ex.Message))
 
-            {
-                model with
-                    IsDeleteInputVisible = false
-                    DeleteErrorMessage = None
-            },
-            deleteCmd
+            { model with IsDeleteInputVisible = false; DeleteErrorMessage = None }, deleteCmd
 
     | InformationDeleted result ->
         match result with
         | Ok() ->
             let loadCmd = LoadInformations(Start()) |> Cmd.ofMsg
 
-            {
-                model with
-                    Informations = Loading
-                    DeleteSkill = ""
-            },
-            loadCmd
+            { model with Informations = Loading; DeleteSkill = "" }, loadCmd
+
         | Error errMsg ->
             printfn "Error deleting information: %s" errMsg
             { model with Informations = Loading }, Cmd.none
-    | ShowUpdateInputSection ->
-        {
-            model with
-                IsUpdateInputVisible = true
-        },
-        Cmd.none
 
-    | HideUpdateInputSection ->
-        {
-            model with
-                IsUpdateInputVisible = false
-                OldSkill = ""
-                UpdatedSkill = ""
-        },
-        Cmd.none
+    | ShowUpdateInputSection -> { model with IsUpdateInputVisible = true }, Cmd.none
 
-    | SetOldSkill oldSkill -> 
-        { 
-            model with 
-                OldSkill = oldSkill 
-        }, Cmd.none
+    | HideUpdateInputSection -> { model with IsUpdateInputVisible = false; OldSkill = ""; UpdatedSkill = "" }, Cmd.none
 
-    | SetUpdatedSkill updatedSkill ->
-        {
-            model with
-                UpdatedSkill = updatedSkill
-        },
-        Cmd.none
+    | SetOldSkill oldSkill -> { model with OldSkill = oldSkill }, Cmd.none
+
+    | SetUpdatedSkill updatedSkill -> { model with UpdatedSkill = updatedSkill }, Cmd.none
 
     | UpdateInformation ->
         if model.OldSkill.Trim() = "" || model.UpdatedSkill.Trim() = "" then
             let errorMessage = "Please enter both the skill to update and the new skill name."
 
-            {
-                model with
-                    UpdateErrorMessage = Some errorMessage
-            },
-            Cmd.none
+            { model with UpdateErrorMessage = Some errorMessage }, Cmd.none
+
         else
             let updateCmd =
                 Cmd.OfAsync.either
@@ -248,25 +170,15 @@ let update msg model =
                     (fun _ -> InformationUpdated(Ok()))
                     (fun ex -> InformationUpdated(Error ex.Message))
 
-            {
-                model with
-                    IsUpdateInputVisible = false
-                    UpdateErrorMessage = None
-            },
-            updateCmd
+            { model with IsUpdateInputVisible = false; UpdateErrorMessage = None }, updateCmd
 
     | InformationUpdated result ->
         match result with
         | Ok() ->
             let loadCmd = LoadInformations(Start()) |> Cmd.ofMsg
 
-            {
-                model with
-                    Informations = Loading
-                    OldSkill = ""
-                    UpdatedSkill = ""
-            },
-            loadCmd
+            { model with Informations = Loading; OldSkill = ""; UpdatedSkill = "" }, loadCmd
+
         | Error errMsg ->
             printfn "Error updating information: %s" errMsg
             { model with Informations = Loading }, Cmd.none
@@ -281,16 +193,23 @@ module ViewComponents =
                     prop.children [
                         Html.li [
                             Html.a [
+                                prop.href "#home"
+                                prop.className "text-white text-xl p-4 hover:bg-rose-800"
+                                prop.text "Home"
+                            ]
+                        ]
+                        Html.li [
+                            Html.a [
                                 prop.href "#skills"
-                                prop.className "text-white text-xl p-4 hover:bg-gray-300"
+                                prop.className "text-white text-xl p-4 hover:bg-rose-800"
                                 prop.text "Skills"
                             ]
                         ]
                         Html.li [
                             Html.a [
-                                prop.href "#welcome"
-                                prop.className "text-white text-xl p-4 hover:bg-gray-300"
-                                prop.text "Go To Top"
+                                prop.href "#contacts"
+                                prop.className "text-white text-xl p-4 hover:bg-rose-800"
+                                prop.text "Contacts"
                             ]
                         ]
                     ]
@@ -298,9 +217,9 @@ module ViewComponents =
             ]
         ]
 
-    let welcomeSection =
+    let homeSection =
         Html.div [
-            prop.id "welcome"
+            prop.id "home"
             prop.className
                 "flex flex-col items-center justify-center h-screen bg-gradient-to-r from-gray-800 via-gray-900 to-black text-center"
             prop.children [
@@ -447,7 +366,6 @@ module ViewComponents =
                                     )
                                 ]
 
-
                                 if model.IsInsertInputVisible then
                                     insertSection model dispatch
 
@@ -457,41 +375,67 @@ module ViewComponents =
                                 if model.IsUpdateInputVisible then
                                     updateSection model dispatch
 
-                                if
-                                    not model.IsInsertInputVisible
-                                    && not model.IsDeleteInputVisible
-                                    && not model.IsUpdateInputVisible
-                                then
-                                    Html.button [
-                                        prop.className
-                                            "px-6 py-2 bg-gray-800 text-rose-700 font-bold rounded-md hover:bg-gray-700"
-                                        prop.text "Add"
-                                        prop.onClick (fun _ -> dispatch ShowInputSection)
-                                    ]
+                                Html.div [
+                                    prop.className "grid grid-cols-1 sm:grid-cols-2 gap-4 w-full"
+                                    prop.children [
+                                        if
+                                            not model.IsInsertInputVisible
+                                            && not model.IsDeleteInputVisible
+                                            && not model.IsUpdateInputVisible
+                                        then
+                                            Html.button [
+                                                prop.className
+                                                    "px-6 py-2 bg-gray-800 text-rose-700 font-bold rounded-md hover:bg-gray-700"
+                                                prop.text "Add"
+                                                prop.onClick (fun _ -> dispatch ShowInputSection)
+                                            ]
 
-                                if
-                                    not model.IsDeleteInputVisible
-                                    && not model.IsInsertInputVisible
-                                    && not model.IsUpdateInputVisible
-                                then
-                                    Html.button [
-                                        prop.className
-                                            "px-6 py-2 bg-gray-800 text-rose-700 font-bold rounded-md hover:bg-gray-700"
-                                        prop.text "Delete"
-                                        prop.onClick (fun _ -> dispatch ShowDeleteInputSection)
-                                    ]
+                                        if
+                                            not model.IsDeleteInputVisible
+                                            && not model.IsInsertInputVisible
+                                            && not model.IsUpdateInputVisible
+                                        then
+                                            Html.button [
+                                                prop.className
+                                                    "px-6 py-2 bg-gray-800 text-rose-700 font-bold rounded-md hover:bg-gray-700"
+                                                prop.text "Delete"
+                                                prop.onClick (fun _ -> dispatch ShowDeleteInputSection)
+                                            ]
 
-                                if
-                                    not model.IsUpdateInputVisible
-                                    && not model.IsDeleteInputVisible
-                                    && not model.IsInsertInputVisible
-                                then
-                                    Html.button [
-                                        prop.className
-                                            "px-6 py-2 bg-gray-800 text-rose-700 font-bold rounded-md hover:bg-gray-700"
-                                        prop.text "Update"
-                                        prop.onClick (fun _ -> dispatch ShowUpdateInputSection)
+                                        if
+                                            not model.IsUpdateInputVisible
+                                            && not model.IsDeleteInputVisible
+                                            && not model.IsInsertInputVisible
+                                        then
+                                            Html.button [
+                                                prop.className
+                                                    "px-6 py-2 bg-gray-800 text-rose-700 font-bold rounded-md hover:bg-gray-700"
+                                                prop.text "Update"
+                                                prop.onClick (fun _ -> dispatch ShowUpdateInputSection)
+                                            ]
+
+                                        if
+                                            not model.IsInsertInputVisible
+                                            && not model.IsDeleteInputVisible
+                                            && not model.IsUpdateInputVisible
+                                        then
+                                            Html.button [
+                                                prop.className
+                                                    "px-6 py-2 bg-gray-800 text-rose-700 font-bold rounded-md hover:bg-gray-700"
+                                                prop.text "Resume"
+                                                prop.onClick (fun _ ->
+                                                    let downloadLink = "/Resume.pdf"
+
+                                                    let a =
+                                                        Browser.Dom.document.createElement ("a")
+                                                        :?> Browser.Types.HTMLAnchorElement
+
+                                                    a.setAttribute ("href", downloadLink)
+                                                    a.setAttribute ("download", "Resume.pdf")
+                                                    a.click ())
+                                            ]
                                     ]
+                                ]
                             ]
                         ]
                         Html.div [
@@ -506,10 +450,60 @@ module ViewComponents =
             ]
         ]
 
+    let contactSection =
+        Html.div [
+            prop.id "contacts"
+            prop.className
+                "flex flex-col items-center justify-center space-y-24 h-screen bg-gradient-to-r from-gray-800 via-gray-900 to-black text-center"
+            prop.children [
+                Html.h1 [
+                    prop.className "text-8xl font-bold text-rose-700 mb-5"
+                    prop.text "< Contact />"
+                ]
+                Html.div [
+                    prop.className "flex space-x-4 mt-8 justify-evenly w-full"
+                    prop.children [
+                        Html.div [
+                            prop.className "flex flex-row justify-center space-x-20 w-full"
+                            prop.children [
+                                Html.a [
+                                    prop.href "https://www.instagram.com/bank_psta/"
+                                    prop.target "_blank"
+                                    prop.children [
+                                        Html.i [
+                                            prop.className "fab fa-instagram text-7xl text-white hover:text-rose-500"
+                                        ]
+                                    ]
+                                ]
+                                Html.a [
+                                    prop.href "https://www.facebook.com/pongsatorn.bank.14"
+                                    prop.target "_blank"
+                                    prop.children [
+                                        Html.i [
+                                            prop.className "fab fa-facebook text-7xl text-white hover:text-rose-500"
+                                        ]
+                                    ]
+                                ]
+                                Html.a [
+                                    prop.href "https://github.com/PongsatornBank"
+                                    prop.target "_blank"
+                                    prop.children [
+                                        Html.i [
+                                            prop.className "fab fa-github text-7xl text-white hover:text-rose-500"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
 
 let view model dispatch =
     Html.section [
         ViewComponents.navBar
-        ViewComponents.welcomeSection
+        ViewComponents.homeSection
         ViewComponents.skillsSection model dispatch
+        ViewComponents.contactSection
     ]
